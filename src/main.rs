@@ -16,13 +16,9 @@ pub use error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    //let args: Vec<String> = env::args().collect();
+    env::set_var("RUST_LOG", "info,trust_dns_proto=error");
+    env_logger::init();
 
-    //if args.len() != 2 {
-    //   return Err(Error::CliUsage.into());
-    //}
-
-    //let target = args[1].as_str();
     let cli = App::new(clap::crate_name!())
         .version(clap::crate_version!())
         .about(clap::crate_description!())
@@ -44,11 +40,16 @@ async fn main() -> Result<(), anyhow::Error> {
 
 
     if let Some(_) = cli.subcommand_matches("modules") {
-        println!("Launching modules");
+        log::info!("Lauching modules");
     } else if let Some(matches) = cli.subcommand_matches("scan") {
         // we can safely unwrap as the argument is required
         let target = matches.value_of("target").unwrap();
+
+        log::info!("Starting scan on : {}", target);
+
         scan(&target).await?;
+
+        log::info!("Finishing scan on : {}", target);
     }
 
     Ok(())
@@ -61,8 +62,6 @@ async fn scan(target: &str) -> Result<(), anyhow::Error> {
     let ports_concurrency = 200;
     let subdomains_concurrency = 100;
     let scan_start = Instant::now();
-
-    println!("start processing");
 
     let subdomains = subdomains::enumerate(&http_client, target).await?;
 
