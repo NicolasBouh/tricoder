@@ -1,6 +1,6 @@
 use crate::{
     model::{CrtShEntry, SubDomain},
-    Error,
+    error::Error,
 };
 use futures::stream;
 use futures::StreamExt;
@@ -11,6 +11,7 @@ use trust_dns_resolver::{
     name_server::{GenericConnection, GenericConnectionProvider, TokioRuntime},
     AsyncResolver,
 };
+
 type DnsResolver = AsyncResolver<GenericConnection, GenericConnectionProvider<TokioRuntime>>;
 
 pub async fn enumerate(http_client: &Client, target: &str) -> Result<Vec<SubDomain>, Error> {
