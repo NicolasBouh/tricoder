@@ -1,3 +1,4 @@
+use clap::{App, SubCommand, Arg};
 use futures::{stream, StreamExt};
 use reqwest::Client;
 use std::{
@@ -15,14 +16,45 @@ pub use error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let args: Vec<String> = env::args().collect();
+    //let args: Vec<String> = env::args().collect();
 
-    if args.len() != 2 {
-        return Err(Error::CliUsage.into());
+    //if args.len() != 2 {
+    //   return Err(Error::CliUsage.into());
+    //}
+
+    //let target = args[1].as_str();
+    let cli = App::new(clap::crate_name!())
+        .version(clap::crate_version!())
+        .about(clap::crate_description!())
+        .subcommand(SubCommand::with_name("modules")
+            .about("List add modules")
+        )
+        .subcommand(SubCommand::with_name("scan")
+            .about("Scan an target")
+            .arg(
+                Arg::with_name("target")
+                    .help("The domain name to scan")
+                    .required(true)
+                    .index(1)
+            ),
+        )
+        .setting(clap::AppSettings::ArgRequiredElseHelp)
+        .setting(clap::AppSettings::VersionlessSubcommands)
+        .get_matches();
+
+
+    if let Some(_) = cli.subcommand_matches("modules") {
+        println!("Launching modules");
+    } else if let Some(matches) = cli.subcommand_matches("scan") {
+        // we can safely unwrap as the argument is required
+        let target = matches.value_of("target").unwrap();
+        scan(&target).await?;
     }
 
-    let target = args[1].as_str();
+    Ok(())
+}
 
+async fn scan(target: &str) -> Result<(), anyhow::Error> {
     let http_timeout = Duration::from_secs(10);
     let http_client = Client::builder().timeout(http_timeout).build()?;
 
