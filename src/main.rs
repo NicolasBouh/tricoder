@@ -7,6 +7,7 @@ use anyhow::Result;
 mod cli;
 mod error;
 mod model;
+mod modules;
 mod ports;
 mod common_ports;
 mod subdomains;
